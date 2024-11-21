@@ -262,17 +262,25 @@ def second_inference(example, hint):
 
 def main():
     # Suppress exception tracebacks to prevent image data from being printed
-    sys.excepthook = lambda *args: None
+    # sys.excepthook = lambda *args: None
 
     # Lists to store results
     all_results = []
     correct_answers = []
     incorrect_answers = []
+    '''
+    # Check the dataset type
+    print(f"Dataset type: {type(dataset)}")
 
-    print("Starting initial inference...")
+        # Check the total number of examples
+    print(f"Total examples: {len(dataset)}")
 
-    # 1. Initial Inference
-    for example in tqdm(dataset, desc="Initial Inference"):
+    # Slice and check the number of examples in the slice
+    slice_data = dataset[0:]
+    print(f"Number of examples in the slice: {len(slice_data)}")
+    '''
+    slice_data = dataset.select(range(5000, 7300))
+    for example in tqdm(slice_data, desc="Initial Inference"):
         result = initial_inference(example)
         if result is None:
             continue  # Skip examples with missing data
