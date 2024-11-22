@@ -117,37 +117,37 @@ def initial_inference(example):
             print("Image loading failed.")
             return None
 
-        # Modify the prompt to include instructions
-        modified_prompt = (
-            f"{prompt}\n"
-            "Explain your reasoning step-by-step.\n"
-            "Your final answer in the format: [answer] + your reasons"
-        )
-
         # Prepare inputs
-        inputs = processor(images=image, text=modified_prompt, return_tensors="pt").to(device)
+        inputs = processor(images=image, text=prompt, return_tensors="pt").to(device)
 
         # Generate response
-        outputs = model.generate(**inputs, max_length=200, num_beams=5, early_stopping=True)
+        outputs = model.generate(**inputs, max_length=50, num_beams=5, early_stopping=True)
         generated_text = processor.tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
 
-        # Extract the correct option (e.g., "D. Black and White")
-        correct_option = ground_truth.strip()
+        # Extract the choice from the ground truth
+        if "[Answer]" in ground_truth:
+            ground_truth_choice = ground_truth.split("[Answer]")[-1].strip().lower()
+        else:
+            ground_truth_choice = ground_truth.strip().lower()
 
-        # Check if the correct answer appears anywhere in the model's output
-        is_correct = correct_option.lower() in generated_text.lower()
+        # Normalize the model's answer to lowercase for comparison
+        model_answer_normalized = generated_text.strip().lower()
+
+        # Check correctness by comparing the choices
+        is_correct = ground_truth_choice in model_answer_normalized
 
         return {
             "id": example.get("id"),
             "question": prompt,
-            "ground_truth": ground_truth,
-            "model_answer": generated_text,
+            "ground_truth": ground_truth_choice,
+            "model_answer": model_answer_normalized,
             "is_correct": is_correct,
-            "rationale": generated_text  # Treat the full generated text as the rationale
+            "rationale": generated_text  # Treat the full output as the rationale
         }
     except Exception as e:
         print(f"Error during initial inference: {e}")
         return None
+
 
 
 
@@ -163,7 +163,7 @@ def main():
     incorrect_answers = []
     all_results = []
     # using only a portion of it for correct results
-    dataset = dataset.select(range(0, 200))
+    dataset = dataset.select(range(0, 1000))
     for example in tqdm(dataset, desc="Initial Inference"):
         result = initial_inference(example)
         if result:
