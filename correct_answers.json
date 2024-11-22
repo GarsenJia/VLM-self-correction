@@ -1,0 +1,106 @@
+[
+    {
+        "id": null,
+        "question": "How many people are performing on stage in the image?\nA. Four\nB. Two\nC. Three\nD. One\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "b. two",
+        "model_answer": "two people are performing on stage.\na. four\nb. two\nc. three\nd. one\n explain your reasoning step-by-step.\nthen select one option in the format of [your answer",
+        "is_correct": true,
+        "rationale": "two people are performing on stage.\nA. Four\nB. Two\nC. Three\nD. One\n explain your reasoning step-by-step.\nThen select one option in the format of [your answer"
+    },
+    {
+        "id": null,
+        "question": "How many people are standing on the red carpet in the image?\nA. One\nB. Two\nC. Three\nD. Four\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "c",
+        "model_answer": "two people are standing on the red carpet.\na. one\nb. two\nc. three\nd. four\n explain your reasoning step-by-step.\nthen select one option in the format of [your",
+        "is_correct": true,
+        "rationale": "two people are standing on the red carpet.\nA. One\nB. Two\nC. Three\nD. Four\n Explain your reasoning step-by-step.\nThen select one option in the format of [your"
+    },
+    {
+        "id": null,
+        "question": "How many people are in the image?\nA. 1\nB. 3\nC. 2\nD. 4\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "c. 2",
+        "model_answer": "two people are.\na. 1\nb. 3\nc. 2\nd. 4\nexplain your reasoning step-by-step.\nthen select one option in the format of [your answer].",
+        "is_correct": true,
+        "rationale": "two people are.\nA. 1\nB. 3\nC. 2\nD. 4\nExplain your reasoning step-by-step.\nThen select one option in the format of [your answer]."
+    },
+    {
+        "id": null,
+        "question": "How many windows are there in the image?\nA. One\nB. Two\nC. Four\nD. Three\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "b",
+        "model_answer": "two windows are there.\na. one\nb. two\nc. four\nd. three\n explain your reasoning step-by-step.\nthen select one option in the format of [your answer].",
+        "is_correct": true,
+        "rationale": "two windows are there.\nA. One\nB. Two\nC. Four\nD. Three\n explain your reasoning step-by-step.\nThen select one option in the format of [your answer]."
+    },
+    {
+        "id": null,
+        "question": "How many leaves are there in the image?\nA. 1\nB. 4\nC. 3\nD. 2\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "d. 2",
+        "model_answer": "two leaves are there.\na. 1\nb. 4\nc. 3\nd. 2\n explain your reasoning step-by-step.\nthen select one option in the format of [your answer].",
+        "is_correct": true,
+        "rationale": "two leaves are there.\nA. 1\nB. 4\nC. 3\nD. 2\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer]."
+    },
+    {
+        "id": null,
+        "question": "How many hearts are detected in the image?\nA. Two\nB. One\nC. None\nD. Three\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "b. one",
+        "model_answer": "two hearts are detected.\na. two\nb. one\nc. none\nd. three\n explain your reasoning step-by-step.\nthen select one option in the format of [your answer].",
+        "is_correct": true,
+        "rationale": "two hearts are detected.\nA. Two\nB. One\nC. None\nD. Three\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer]."
+    },
+    {
+        "id": null,
+        "question": "What is the attribute of the grass in the image?\nA. Dry\nB. Green\nC. Brown\nD. Yellow\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "b. green",
+        "model_answer": "dry\nb. green\nc. brown\nd. yellow\n explain your reasoning step-by-step.\nthen select one option in the format of [your answer].",
+        "is_correct": true,
+        "rationale": "Dry\nB. Green\nC. Brown\nD. Yellow\n explain your reasoning step-by-step.\nThen select one option in the format of [your answer]."
+    },
+    {
+        "id": null,
+        "question": "What is the most commonly seen object in the image?\nA. Soccer ball\nB. Soccer players\nC. Referee\nD. Goal post\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "b. soccer players",
+        "model_answer": "soccer ball\nb. soccer players\nc. referee\nd. goal post: explain your reasoning step-by-step. then select one option in the format of [your answer].",
+        "is_correct": true,
+        "rationale": "soccer ball\nB. Soccer players\nC. Referee\nD. Goal post: Explain your reasoning step-by-step. Then select one option in the format of [your answer]."
+    },
+    {
+        "id": null,
+        "question": "What type of footwear is the most common in the image?\nA. Boots\nB. Sandals\nC. Athletic shoes\nD. Dress shoes\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "b. sandals",
+        "model_answer": "boots\nb. sandals\nc. athletic shoes\nd. dress shoes\n explain your reasoning step-by-step.\nthen select one option in the format of [your answer].",
+        "is_correct": true,
+        "rationale": "Boots\nB. Sandals\nC. Athletic shoes\nD. Dress shoes\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer]."
+    },
+    {
+        "id": null,
+        "question": "How many musical instruments can be seen in the image?\nA. One\nB. Three\nC. Two\nD. Four\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "c. two",
+        "model_answer": "three musical instruments can be seen.\na. one\nb. three\nc. two\nd. four\n explain your reasoning step-by-step.\nthen select one option in the format of [your answer",
+        "is_correct": true,
+        "rationale": "three musical instruments can be seen.\nA. One\nB. Three\nC. Two\nD. Four\n explain your reasoning step-by-step.\nThen select one option in the format of [your answer"
+    },
+    {
+        "id": null,
+        "question": "How many pumpkins are in the image?\nA. Two\nB. One\nC. Three\nD. Four\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "d. four",
+        "model_answer": "three pumpkins are in the picture.\na. two\nb. one\nc. three\nd. four\n explain your reasoning step-by-step.\nthen select one option in the format of [your",
+        "is_correct": true,
+        "rationale": "three pumpkins are in the picture.\nA. Two\nB. One\nC. Three\nD. Four\n explain your reasoning step-by-step.\nThen select one option in the format of [your"
+    },
+    {
+        "id": null,
+        "question": "How many distinct bodies of water can be seen in the image?\nA. 4\nB. 2\nC. 3\nD. 1\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "d. 1",
+        "model_answer": "two distinct bodies of water can be seen.\na. 4\nb. 2\nc. 3\nd. 1\n explain your reasoning step-by-step.\nthen select one option in the format of [your answer",
+        "is_correct": true,
+        "rationale": "two distinct bodies of water can be seen.\nA. 4\nB. 2\nC. 3\nD. 1\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer"
+    },
+    {
+        "id": null,
+        "question": "What is the material of the road in the image?\nA. Concrete\nB. Asphalt\nC. Gravel\nD. Dirt\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer].",
+        "ground_truth": "d. dirt",
+        "model_answer": "concrete\nb. asphalt\nc. gravel\nd. dirt\n explain your reasoning step-by-step.\nthen select one option in the format of [your answer].",
+        "is_correct": true,
+        "rationale": "concrete\nB. Asphalt\nC. Gravel\nD. Dirt\n Explain your reasoning step-by-step.\nThen select one option in the format of [your answer]."
+    }
+]
