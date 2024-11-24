@@ -54,10 +54,9 @@ def is_similar(a, b, threshold=0.8):
     """Check if two strings are similar above a threshold."""
     return SequenceMatcher(None, a.lower(), b.lower()).ratio() >= threshold
 
+
 def load_image(image_data):
-    """
-    Load an image from a base64-encoded string, file path, or URL.
-    """
+    """Load an image from a base64-encoded string, file path, or URL."""
     if isinstance(image_data, str):
         # Try to detect and decode base64-encoded images
         try:
@@ -75,7 +74,6 @@ def load_image(image_data):
             # Not a base64 string; proceed to check if it's a URL or file path
             pass
         except Exception:
-            # Catch other exceptions without printing image data
             print("An error occurred while decoding base64 image.")
             return None
 
@@ -100,8 +98,18 @@ def load_image(image_data):
         print(f"Unsupported image type: {type(image_data)}")
         return None
 
-def initial_inference(example):
-    """Perform initial inference and collect results."""
+
+def is_correct_answer(answer, ground_truth_variants):
+    """
+    Check if the generated answer matches any of the ground truth variants.
+    Normalize both the answer and ground truth for comparison.
+    """
+    answer_normalized = answer.strip().lower()
+    return any(is_similar(answer_normalized, variant, threshold=0.9) for variant in ground_truth_variants)
+
+
+def generate_multiple_answers(example):
+    """Perform inference to generate multiple diverse answers and evaluate results."""
     try:
         image_data = example.get("image", None)
         prompt = example.get("prompt", None)
@@ -120,35 +128,44 @@ def initial_inference(example):
         # Prepare inputs
         inputs = processor(images=image, text=prompt, return_tensors="pt").to(device)
 
-        # Generate response
-        outputs = model.generate(**inputs, max_length=50, num_beams=5, early_stopping=True)
-        generated_text = processor.tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
+        # Generate multiple diverse responses
+        outputs = model.generate(
+            **inputs,
+            max_length=50,            # Set the maximum length of the responses
+            do_sample=True,           # Enable stochastic sampling
+            top_k=50,                 # Sample from the top 50 tokens
+            temperature=1.5,          # High temperature for diverse outputs
+            num_return_sequences=30,  # Generate 30 responses at once
+            num_beams=1               # Turn off beam search
+        )
 
-        # Extract the choice from the ground truth
-        if "[Answer]" in ground_truth:
-            ground_truth_choice = ground_truth.split("[Answer]")[-1].strip().lower()
-        else:
-            ground_truth_choice = ground_truth.strip().lower()
+        generated_answers = [
+            processor.tokenizer.decode(output, skip_special_tokens=True).strip()
+            for output in outputs
+        ]
 
-        # Normalize the model's answer to lowercase for comparison
-        model_answer_normalized = generated_text.strip().lower()
+        # Extract and normalize the ground truth
+        ground_truth_normalized = ground_truth.strip().lower()
+        ground_truth_variants = {ground_truth_normalized, "two", "2", "d. two"}
 
-        # Check correctness by comparing the choices
-        is_correct = ground_truth_choice in model_answer_normalized
+        # Normalize answers and evaluate correctness
+        correct_count = sum(
+            is_correct_answer(answer, ground_truth_variants) for answer in generated_answers
+        )
+
+        # Percentage of answers that are true
+        true_percentage = (correct_count / len(generated_answers)) * 100
 
         return {
             "id": example.get("id"),
             "question": prompt,
-            "ground_truth": ground_truth_choice,
-            "model_answer": model_answer_normalized,
-            "is_correct": is_correct,
-            "rationale": generated_text  # Treat the full output as the rationale
+            "ground_truth": ground_truth_normalized,
+            "answers": generated_answers,
+            "true_percentage": true_percentage,
         }
     except Exception as e:
-        print(f"Error during initial inference: {e}")
+        print(f"Error during inference: {e}")
         return None
-
-
 
 
 # ================================
@@ -159,34 +176,21 @@ def main():
     print("Loading dataset...")
     dataset = load_dataset(DATASET_NAME, split=DATASET_SPLIT)
 
-    correct_answers = []
-    incorrect_answers = []
     all_results = []
-    # using only a portion of it for correct results
+    # Using only a portion of it for correct results
     dataset = dataset.select(range(0, 1000))
-    for example in tqdm(dataset, desc="Initial Inference"):
-        result = initial_inference(example)
+
+    for example in tqdm(dataset, desc="Generating Multiple Answers"):
+        result = generate_multiple_answers(example)
         if result:
             all_results.append(result)
-            if result["is_correct"]:
-                correct_answers.append(result)
-            else:
-                incorrect_answers.append(result)
 
-    # Calculate error rate
-    initial_error_rate = (len(incorrect_answers) / len(all_results)) * 100
-    print(f"Initial Error Rate: {initial_error_rate:.2f}%")
+    # Save results to file
+    with open("all_results.json", "w") as f:
+        json.dump(all_results, f, indent=4)
 
-    # Save correct answers
-    with open(CORRECT_ANSWERS_FILE, "w") as f:
-        json.dump(correct_answers, f, indent=4)
+    print(f"Saved results for {len(all_results)} questions to 'all_results.json'.")
 
-    # Save incorrect answers
-    with open(INCORRECT_ANSWERS_FILE, "w") as f:
-        json.dump(incorrect_answers, f, indent=4)
-
-    print(f"Saved {len(correct_answers)} correct answers to {CORRECT_ANSWERS_FILE}.")
-    print(f"Saved {len(incorrect_answers)} incorrect answers to {INCORRECT_ANSWERS_FILE}.")
 
 if __name__ == "__main__":
     main()
