@@ -1,0 +1,22 @@
+before finetune:
+eval on the test + train for first inference
+Total Entries: 3700
+Entries with True Percentage > 0: 564
+Average True Percentage (non-zero only): 9.99
+max percentage: 63.33333333333333
+min percentage: 3.3333333333333335
+
+eval on the test for first inference
+Total Entries: 1000
+Entries with True Percentage > 0: 182
+Average True Percentage (non-zero only): 10.44
+max percentage: 43.333333333333336
+min percentage: 3.3333333333333335
+
+eval on the train for first inference
+Total Entries: 2700
+Entries with True Percentage > 0: 378
+Average True Percentage (non-zero only): 9.76
+max percentage: 63.33333333333333
+min percentage: 3.3333333333333335
+

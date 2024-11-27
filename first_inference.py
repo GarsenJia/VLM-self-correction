@@ -14,7 +14,7 @@ from difflib import SequenceMatcher
 # ================================
 
 # Florence Model Configuration
-MODEL_NAME = "microsoft/Florence-2-large-ft"
+MODEL_NAME = "microsoft/Florence-2-base-ft"
 REVISION = 'main'
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -178,18 +178,22 @@ def main():
 
     all_results = []
     # Using only a portion of it for correct results
-    dataset = dataset.select(range(0, 1000))
+    # Combine the indices from all the ranges
+    indices = list(range(0, 1000)) + list(range(1000, 1200)) + list(range(3000, 4000)) + list(range(4000, 4500)) + list(range(5000, 6000))
 
-    for example in tqdm(dataset, desc="Generating Multiple Answers"):
+    # Select the subset of the dataset using the combined indices
+    subset_dataset = dataset.select(indices)
+
+    for example in tqdm(subset_dataset, desc="Generating Multiple Answers"):
         result = generate_multiple_answers(example)
         if result:
             all_results.append(result)
 
     # Save results to file
-    with open("all_results.json", "w") as f:
+    with open("all_results_train.json", "w") as f:
         json.dump(all_results, f, indent=4)
 
-    print(f"Saved results for {len(all_results)} questions to 'all_results.json'.")
+    print(f"Saved results for {len(all_results)} questions to 'all_results_train.json'.")
 
 
 if __name__ == "__main__":
