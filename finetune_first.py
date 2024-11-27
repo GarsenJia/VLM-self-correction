@@ -38,7 +38,7 @@ def collate_fn(batch):
     return inputs, answers
 
 # Training function
-def train_model(train_loader, val_loader, model, processor, epochs=10, lr=1e-6):
+def train_model(train_loader, val_loader, model, processor, epochs=6, lr=1e-6):
     optimizer = AdamW(model.parameters(), lr=lr)
     num_training_steps = epochs * len(train_loader)
     lr_scheduler = get_scheduler(
@@ -108,9 +108,11 @@ def main():
     # Load and split data
     data = load_dataset("JiayiHe/SELFCORSET", split="train")
     working_data = data.select(working_indices)
-    initial_fine_tune_data = working_data.train_test_split(test_size=0.3)
-    florence_fine_tune_train = initial_fine_tune_data['train']
-    florence_fine_tune_valid = initial_fine_tune_data['test']
+    # initial_fine_tune_data = working_data.train_test_split(test_size=0.3)
+    florence_fine_tune_train = working_data # all data except 0-1000
+    test_indices = list(range(0, 1000))
+    test_data = data.select(test_indices)
+    florence_fine_tune_valid = test_data
 
     # Load model and processor
     model = AutoModelForCausalLM.from_pretrained("microsoft/Florence-2-base-ft", trust_remote_code=True, revision='refs/pr/6').to(device)
@@ -123,11 +125,11 @@ def main():
     val_loader = DataLoader(val_dataset, batch_size=1, collate_fn=collate_fn, num_workers=0)
 
     # Train the model
-    train_model(train_loader, val_loader, model, processor, epochs=8)
+    train_model(train_loader, val_loader, model, processor, epochs=6)
 
     # Save final model and processor
-    model.save_pretrained("Florence-2-CoTVMCQA_model_5_epochs")
-    processor.save_pretrained("Florence-2-CoTVMCQA_processor_5_epochs")
+    model.save_pretrained("Florence-2-CoTVMCQA_model_6_epochs")
+    processor.save_pretrained("Florence-2-CoTVMCQA_processor_6_epochs")
 
 if __name__ == "__main__":
     main()
