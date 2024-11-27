@@ -20,7 +20,7 @@ Average True Percentage (non-zero only): 9.76
 max percentage: 63.33333333333333
 min percentage: 3.3333333333333335
 
-after finetune
+after finetune: finetune time per epoch is about 6 mins on 1 A100 GPU
 Total Entries: 1000
 Entries with True Percentage > 0: 134
 Average True Percentage (non-zero only): 7.51
@@ -37,7 +37,7 @@ max percentage: 73.33333333333333
 min percentage: 3.3333333333333335
 It seems that it improves a bit but not too much. 
 
-Then let's finetune the large model
+Then let's finetune the large model : time is about 13 min per epoch on 1 A100GPU
 Total Entries: 1000
 Entries with True Percentage > 0: 107
 Average True Percentage (non-zero only): 9.31
@@ -46,4 +46,16 @@ min percentage: 3.3333333333333335
 
 hmm the performance also decreases. This is actually expected!
 
-now, let's do the experiment of second inference directly on the given hints data.
+now, let's do the experiment of second inference directly on the given **hints data**.
+inference time: 10 min/500 examples
+MODEL_PATH = "Florence-2-CoTVMCQA_model_6_epochs"
+PROCESSOR_PATH = "Florence-2-CoTVMCQA_processor_6_epochs"
+Total Entries: 500
+Non-Zero Percentages: 371
+Average True Percentage (Non-Zero Only): 15.91
+Max True Percentage: 60.00
+Min True Percentage: 3.33
+cool, we seem to have sth work!
+
+Next, how about do this for the base model?
+inference time: 24 min/500 examples
