@@ -65,7 +65,7 @@ Average True Percentage (Non-Zero Only): 28.95
 Max True Percentage: 100.00
 Min True Percentage: 3.33
 
-interesting isn't it
+interesting isn't itq 
 
 few exp:
 1. base model after hints performancec
