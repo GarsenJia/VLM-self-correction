@@ -14,7 +14,7 @@ from difflib import SequenceMatcher
 # ================================
 
 # Florence Model Configuration
-MODEL_NAME = "microsoft/Florence-2-base-ft"
+MODEL_NAME = "microsoft/Florence-2-large-ft"
 REVISION = 'main'
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -190,10 +190,10 @@ def main():
             all_results.append(result)
 
     # Save results to file
-    with open("self_correct_test.json", "w") as f:
+    with open("self_correct__large_model_test.json", "w") as f:
         json.dump(all_results, f, indent=4)
 
-    print(f"Saved results for {len(all_results)} questions to 'self_correct_test.json'.")
+    print(f"Saved results for {len(all_results)} questions to 'self_correct__large_model_test.json'.")
 
 
 if __name__ == "__main__":
