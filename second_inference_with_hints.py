@@ -20,8 +20,8 @@ device = accelerator.device
 print(f"Using device: {device}")
 
 # Paths for your local model and processor
-MODEL_PATH = "Florence-2-CoTVMCQA_model_6_epochs"
-PROCESSOR_PATH = "Florence-2-CoTVMCQA_processor_6_epochs"
+MODEL_PATH = "Florence-2-large-CoTVMCQA_model_6_epochs"
+PROCESSOR_PATH = "Florence-2-large-CoTVMCQA_processor_6_epochs"
 
 # Load the Florence model and processor
 print("Loading Florence model and processor...")
@@ -49,7 +49,7 @@ embedding_model.to(device)  # Move to the same device as Florence model
 
 # Dataset Configuration
 HINTS_FILE = "hints_with_photo.json"  # Updated dataset
-OUTPUT_FILE = "self_correct_second_round_results.json"
+OUTPUT_FILE = "self_correct_second_round_large_results.json"
 
 # Define similarity threshold
 SIMILARITY_THRESHOLD = 0.8

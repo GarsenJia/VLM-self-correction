@@ -51,7 +51,7 @@ def analyze_true_percentage(file_path):
 
 
 # File path
-file_path = "self_correct_second_round_results.json"
+file_path = "self_correct_second_round_large_results.json"
 
 # Run the analysis
 results = analyze_true_percentage(file_path)
