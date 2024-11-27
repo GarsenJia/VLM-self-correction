@@ -33,30 +33,34 @@ class CoTVMCQADataset(Dataset):
         img = Image.open(decoded_string)
         return img
 
-# GPT generated TODO: edit prompts!!
-def format_question_for_llava(question: str) -> str:
-    """Format the question to ensure proper output structure."""
-    formatted_prompt = f"""{question}
 
-    Please analyze the image and provide:
-    1. Step-by-step reasoning for how to arrive at the answer
-    2. Your final answer between two ## marks
-    
-    For example, your response should be structured like:
-    Step 1: [First observation]
-    Step 2: [Second observation]
-    Step 3: [Third observation]
-    ...
-    Therefore, based on this reasoning...
-    
-    ## [A/B/C/D] ##
-    
-    Remember to:
-    - Explain your thinking process clearly
-    - Support your answer with visual evidence from the image
-    - Put your final answer between ## marks
-    """
+def format_question_for_llava(question: str) -> str:
+    """Format the question to ensure proper hint generation without answers."""
+    formatted_prompt = f"""You are a helpful visual reasoning assistant.
+
+Please analyze the image and generate helpful hints to answer the question provided. **Do not** include or reveal the direct answer. Your role is to guide others toward arriving at the correct answer through insightful hints.
+
+**Question:**
+
+{question}
+
+**Response Structure:**
+
+- **Hint 1:** [First observation or clue based on the image]
+- **Hint 2:** [Second observation or clue building upon the first and leading closer to the answer]
+
+**Guidelines:**
+
+- Be clear and concise in your explanations.
+- Use relevant visual evidence from the image to support each hint.
+- Ensure each hint logically leads to the next, gradually guiding toward the answer *without* stating it.
+- Avoid unnecessary details that do not contribute to understanding the image or question.
+
+"""
     return formatted_prompt
+
+
+
 class ImageQuestionProcessor:
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -64,7 +68,6 @@ class ImageQuestionProcessor:
     def process_single_image(self, question: str, image: Image.Image) -> Dict:
         """Process a single image-question pair using Ollama's LLaVA model."""
         try:
-            # Convert RGBA to RGB if necessary
             if image.mode == 'RGBA':
                 background = Image.new('RGB', image.size, (255, 255, 255))
                 background.paste(image, mask=image.split()[3])
@@ -72,7 +75,6 @@ class ImageQuestionProcessor:
             elif image.mode != 'RGB':
                 image = image.convert('RGB')
 
-            # Save image to temporary file
             with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
                 image_path = tmp.name
                 image.save(image_path, format='JPEG', quality=95)
@@ -110,19 +112,37 @@ class ImageQuestionProcessor:
                 print(f"Removed temporary file: {image_path}")
 
     def process_dataset(self, dataset_name: str = "JiayiHe/SELFCORSET", batch_size: int = 4):
-        """Process entire dataset and generate hints"""
+        """Process first 10 questions from the dataset with modified output format"""
         print(f"Loading dataset: {dataset_name}")
 
-        # Load and prepare dataset
-        working_indices = list(range(1000, 1200)) + list(range(3000, 4000)) + \
-                          list(range(4000, 4500)) + list(range(5000, 6000))
+        # Load dataset and take first 10 items
         data = load_dataset(dataset_name, split="train")
-        working_data = data.select(working_indices)
-        initial_fine_tune_data = working_data.train_test_split(test_size=0.3)
-        train_data = initial_fine_tune_data['train']
+        working_data = data.select(range(500))  # Only select first 500 items
 
         # Create dataset instance
-        dataset = CoTVMCQADataset(train_data)
+        dataset = CoTVMCQADataset(working_data)
+
+        # extract hint: only takes less than 2 hints. in case of parsing failure, put the whole answer and don't throw error
+        def extract_hints(response: str) -> str:
+            """Extract hints from response, return full response if parsing fails."""
+            try:
+                hints = []
+                for line in response.split('\n'):
+                    if ('Hint 1:' in line or '**Hint 1:**' in line or
+                            'Hint 2:' in line or '**Hint 2:**' in line):
+                        hint = line.replace('**', '').strip()
+                        hints.append(hint)
+
+                if not hints:
+                    for line in response.split('\n'):
+                        if line.strip().startswith(('Step 1:', '- Step 1:', 'Step 2:', '- Step 2:')):
+                            hints.append(line.strip())
+
+                hints = hints[:2]
+                return '\n\n'.join(hints) if hints else response
+            except Exception as e:
+                print(f"Warning: Error parsing hints: {e}. Using full response instead.")
+                return response
 
         # Create dataloader
         def collate_fn(batch):
@@ -142,13 +162,22 @@ class ImageQuestionProcessor:
             print(f"\nProcessing batch {batch_idx + 1}/{len(dataloader)}")
 
             for q, a, img in zip(questions, answers, images):
-                result = self.process_single_image(q, img)
-                result['original_answer'] = a
+                formatted_q = format_question_for_llava(q)  # Format the question
+                llava_result = self.process_single_image(formatted_q, img)
+
+                parsed_hints = extract_hints(llava_result['answer'])
+                # Format the result with combined question and hint
+                result = {
+                    "question": f"{q}\n\nYou have the following hint:\n{parsed_hints}",
+                    "answer": a
+                }
+
                 all_results.append(result)
+                print(f"Processed {len(all_results)}/10 questions")
 
         return all_results
 
-    def save_results(self, results: List[Dict], output_file: str = "hints.json"):
+    def save_results(self, results: List[Dict], output_file: str = "hints_10.json"):
         """Save results to JSON file"""
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
@@ -157,42 +186,9 @@ class ImageQuestionProcessor:
 
 def main():
     processor = ImageQuestionProcessor()
-
-    # Choose processing mode
-    mode = input("Choose mode (1: Single Image, 2: Dataset Processing): ")
-
-    if mode == "1":
-        # Single image processing
-        image_path = input("Enter image path (or press Enter for default C:\\python\\llava_test.png): ")
-        if not image_path:
-            image_path = r"C:\python\llava_test.png"
-
-        question = input("Enter question (or press Enter for default): ")
-        if not question:
-            question = "What can you see in this image?"
-
-        print(f"\nProcessing single image from: {image_path}")
-        try:
-            image = Image.open(image_path)
-            result = processor.process_single_image(question, image)
-            print("\nResults:")
-            print(f"Question: {result['question']}")
-            print(f"Answer: {result['answer']}")
-        except Exception as e:
-            print(f"Error processing image: {e}")
-
-    elif mode == "2":
-        # Dataset processing
-        print("\nProcessing dataset...")
-        batch_size = int(input("Enter batch size (default 4): ") or 4)
-        results = processor.process_dataset(batch_size=batch_size)
-
-        # Save results
-        output_file = input("Enter output file name (default: hints.json): ") or "hints.json"
-        processor.save_results(results, output_file)
-
-    else:
-        print("Invalid mode selected")
+    print("\nProcessing first 10 questions from dataset...")
+    results = processor.process_dataset(batch_size=2)  # Smaller batch size for testing
+    processor.save_results(results, "hints.json")
 
 
 if __name__ == "__main__":
