@@ -35,5 +35,5 @@ def analyze_true_percentage(file_path):
         return None
 
 
-file_path = "/scratch/dkhasha1/bzhang90/VLM-self-correction/all_results_train.json"
+file_path = "self_correct_second_round_results.json."
 true_percentages, count_above_zero, avg, maxval, minval = analyze_true_percentage(file_path)

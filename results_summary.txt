@@ -20,3 +20,30 @@ Average True Percentage (non-zero only): 9.76
 max percentage: 63.33333333333333
 min percentage: 3.3333333333333335
 
+after finetune
+Total Entries: 1000
+Entries with True Percentage > 0: 134
+Average True Percentage (non-zero only): 7.51
+max percentage: 36.666666666666664
+min percentage: 3.3333333333333335
+
+next, we need hints for these 1000 examples and see if the model can perform a bit better
+
+Let's see the data of the larger model:
+Total Entries: 1000
+Entries with True Percentage > 0: 187
+Average True Percentage (non-zero only): 19.20
+max percentage: 73.33333333333333
+min percentage: 3.3333333333333335
+It seems that it improves a bit but not too much. 
+
+Then let's finetune the large model
+Total Entries: 1000
+Entries with True Percentage > 0: 107
+Average True Percentage (non-zero only): 9.31
+max percentage: 53.333333333333336
+min percentage: 3.3333333333333335
+
+hmm the performance also decreases. This is actually expected!
+
+now, let's do the experiment of second inference directly on the given hints data.
