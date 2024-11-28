@@ -45,8 +45,9 @@ max percentage: 53.333333333333336
 min percentage: 3.3333333333333335
 
 hmm the performance also decreases. This is actually expected!
-
+=========================================================================================================================== applying new metric
 now, let's do the experiment of second inference directly on the given **hints data**.
+====================================== base model finetuned w/ hints
 inference time: 10 min/500 examples
 MODEL_PATH = "Florence-2-CoTVMCQA_model_6_epochs"
 PROCESSOR_PATH = "Florence-2-CoTVMCQA_processor_6_epochs"
@@ -56,15 +57,17 @@ Average True Percentage (Non-Zero Only): 15.91
 Max True Percentage: 60.00
 Min True Percentage: 3.33
 cool, we seem to have sth work!
+======================================
 
-Next, how about do this for the base model?
+Next, how about do this for the large model?
+================================== large model finetuned w/ hints
 inference time: 24 min/500 examples
 Total Entries: 500
 Non-Zero Percentages: 352
 Average True Percentage (Non-Zero Only): 28.95
 Max True Percentage: 100.00
 Min True Percentage: 3.33
-
+===================================
 interesting isn't it
 
 few exp:
@@ -75,6 +78,88 @@ what needed to be reported?
 1. base model perform: base, large on devset -> finished
 2. model performance after fintune without hints: base, large on devset -> finished
 3. model performance after finetune with hints: currently doing on 500 examples
-4. model performance without finetune but with hints: not done yet
+4. model performance without finetune but with hints: not done yet IMPORTANT!
 5. model performance with pure textbased hints: not done yet
 6. model performance with prompting after finetune, without hints: not done yet
+7. model performance with prompting before finetune, without hints: -> finished
+
+
+results for no revision added
+1. base
+=========================================
+Total Entries: 1000
+Non-Zero Percentages: 316
+Average True Percentage (Non-Zero Only): 18.42
+Max True Percentage: 76.67
+Min True Percentage: 3.33
+2. large
+=========================================
+Total Entries: 1000
+Non-Zero Percentages: 366
+Average True Percentage (Non-Zero Only): 21.50
+Max True Percentage: 76.67
+Min True Percentage: 3.33
+
+results for only prompting:
+1. before finetune:
+==========================================
+large
+Total Entries: 1000
+Non-Zero Percentages: 259
+Average True Percentage (Non-Zero Only): 12.20
+Max True Percentage: 63.33
+Min True Percentage: 3.33
+===========================================
+base
+Total Entries: 1000
+Non-Zero Percentages: 205
+Average True Percentage (Non-Zero Only): 8.39
+Max True Percentage: 40.00
+Min True Percentage: 3.33
+============================================
+results for only finetune:
+large:
+Total Entries: 1000
+Non-Zero Percentages: 704
+Average True Percentage (Non-Zero Only): 33.93
+Max True Percentage: 100.00
+Min True Percentage: 3.33
+base:
+Total Entries: 1000
+Non-Zero Percentages: 742
+Average True Percentage (Non-Zero Only): 16.85
+Max True Percentage: 66.67
+Min True Percentage: 3.33
+
+results for prompting + finetune:
+1. base:
+============================================
+Total Entries: 1000
+Non-Zero Percentages: 661
+Average True Percentage (Non-Zero Only): 9.60
+Max True Percentage: 43.33
+Min True Percentage: 3.33
+2. large:
+=============================================
+Total Entries: 1000
+Non-Zero Percentages: 668
+Average True Percentage (Non-Zero Only): 26.03
+Max True Percentage: 100.00
+Min True Percentage: 3.33
+
+results for hints + finetune:
+================================================
+large:
+Total Entries: 1000
+Non-Zero Percentages: 712
+Average True Percentage (Non-Zero Only): 28.27
+Max True Percentage: 96.67
+Min True Percentage: 3.33
+
+base:
+Total Entries: 1000
+Non-Zero Percentages: 756
+Average True Percentage (Non-Zero Only): 16.28
+Max True Percentage: 70.00
+Min True Percentage: 3.33
+=================================================
