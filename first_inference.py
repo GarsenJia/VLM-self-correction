@@ -14,7 +14,8 @@ from difflib import SequenceMatcher
 # ================================
 
 # Florence Model Configuration
-MODEL_NAME = "microsoft/Florence-2-base-ft"
+MODEL_NAME = "florence-2-cotvmcqa-model/Florence-2-CoTVMCQA_model"
+PROCESSOR_NAME = "florence-2-cotvmcqa-model/Florence-2-CoTVMCQA_processor"
 REVISION = 'main'
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -26,8 +27,11 @@ model = AutoModelForCausalLM.from_pretrained(
     revision=REVISION
 ).to(device)
 
+config = AutoConfig.from_pretrained("florence-2-cotvmcqa-model/Florence-2-CoTVMCQA_model", trust_remote_code=True)
+config.vision_config.model_type = "davit"
+
 processor = AutoProcessor.from_pretrained(
-    MODEL_NAME,
+    PROCESSOR_NAME,
     trust_remote_code=True,
     revision=REVISION
 )
@@ -54,6 +58,10 @@ def is_similar(a, b, threshold=0.8):
     """Check if two strings are similar above a threshold."""
     return SequenceMatcher(None, a.lower(), b.lower()).ratio() >= threshold
 
+def edit_prompt(prompt):
+    prompt_prefix = "After the question, you will see four possible answers to it. Select one and follow the instructions after the answers. \n "
+    #new_prompt = prompt.replace("?", " out of the following options? Only select one option: ")
+    return prompt_prefix + prompt
 
 def load_image(image_data):
     """Load an image from a base64-encoded string, file path, or URL."""
@@ -113,6 +121,7 @@ def generate_multiple_answers(example):
     try:
         image_data = example.get("image", None)
         prompt = example.get("prompt", None)
+        prompt = edit_prompt(prompt)
         ground_truth = example.get("response", None)
 
         if not all([image_data, prompt, ground_truth]):
