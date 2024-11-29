@@ -1,7 +1,8 @@
 # VLM-self-correction
 
 
-## WE HAVE ALMOST FINISHED THE FINAL PROJECT!!! BELOW ARE SOME DATA FOR ANALYSIS:
+## WE HAVE ALMOST FINISHED THE FINAL PROJECT!!! BELOW ARE SOME DATA FOR ANALYSIS: SEE THE results_summary.txt for all info
+
 ==================================== applying new metric
 **NOW BEGINS THE REAL DATA!!!**
 results for no revision added
