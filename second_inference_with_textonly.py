@@ -10,42 +10,21 @@ from sentence_transformers import SentenceTransformer, util
 import re
 from accelerate import Accelerator
 
-# ================================
-# Configuration and Setup
-# ================================
 
 # Initialize Accelerator
 accelerator = Accelerator()
 device = accelerator.device
 print(f"Using device: {device}")
-'''
+
 # Paths for your local model and processor
-MODEL_PATH = "Florence-2-CoTVMCQA_model_6_epochs"
-PROCESSOR_PATH = "Florence-2-CoTVMCQA_processor_6_epochs"
+MODEL_PATH = "Florence-2-large-CoTVMCQA_model_6_epochs"
+PROCESSOR_PATH = "Florence-2-large-CoTVMCQA_processor_6_epochs"
 
 # Load the Florence model and processor
 print("Loading Florence model and processor...")
 model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, trust_remote_code=True)
 processor = AutoProcessor.from_pretrained(PROCESSOR_PATH, trust_remote_code=True)
-'''
-# using below for models without! finetune
-MODEL_NAME = "microsoft/Florence-2-large-ft"
-REVISION = 'main'
 
-# Load the Florence model and processor
-print("Loading Florence model...")
-
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME,
-    trust_remote_code=True,
-    revision=REVISION
-)
-
-processor = AutoProcessor.from_pretrained(
-    MODEL_NAME,
-    trust_remote_code=True,
-    revision=REVISION
-)
 # Add a special token if needed
 special_token = "<CoTVMCQA>"
 special_tokens_dict = {"additional_special_tokens": [special_token]}
@@ -66,15 +45,13 @@ embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
 embedding_model.to(device)  # Move to the same device as Florence model
 
 # Dataset Configuration
-HINTS_FILE = "hints_with_photo_1000.json"  # Updated dataset
-OUTPUT_FILE = "self_correct_without_finetune_large_only_hinted_results.json"
+HINTS_FILE = "/scratch/dkhasha1/bzhang90/VLM-self-correction/processed_text_only_data.json"  # Updated dataset
+OUTPUT_FILE = "self_correct_second_round_large_textonly_results.json"
+blank_image = Image.open("/scratch/dkhasha1/bzhang90/VLM-self-correction/512-512.png").convert("RGB")
 
 # Define similarity threshold
 SIMILARITY_THRESHOLD = 0.8
 
-# ================================
-# Helper Functions
-# ================================
 
 def load_image(image_data):
     """
@@ -150,30 +127,24 @@ def generate_multiple_answers(example, num_return_sequences=30):
     Generate multiple answers for a given example and evaluate their correctness.
     """
     try:
-        question = example.get("question", None)
-        ground_truth = example.get("answer", None)
-        image_data = example.get("image", None)
+        prompt = example.get("prompt", None)
+        response = example.get("response", None)
 
-        if not all([question, ground_truth, image_data]):
-            print("Skipping entry due to missing fields.")
+        # Check if both prompt and response are valid strings
+        if not isinstance(prompt, str) or not isinstance(response, str):
+            print(f"Skipping entry due to invalid fields: prompt={prompt}, response={response}")
             return None
 
-        # Extract the correct answer from ground_truth
-        correct_answer = extract_correct_answer(ground_truth)
+        # Extract the correct answer from response
+        correct_answer = extract_correct_answer(response)
         if not correct_answer:
-            print("Could not extract correct answer from ground_truth.")
+            print(f"Could not extract correct answer from response: {response}")
             return None
 
         ground_truth_variants = generate_ground_truth_variants(correct_answer)
 
-        # Load the image
-        image = load_image(image_data)
-        if image is None:
-            print("Image loading failed.")
-            return None
-
-        # Prepare inputs for the Florence model
-        inputs = processor(images=image, text=question, return_tensors="pt").to(device)
+        # Prepare inputs for the Florence model using the blank image
+        inputs = processor(images=blank_image, text=prompt, return_tensors="pt").to(device)
 
         # Generate multiple diverse responses
         with torch.no_grad():
@@ -199,8 +170,8 @@ def generate_multiple_answers(example, num_return_sequences=30):
         true_percentage = (correct_count / len(generated_answers)) * 100 if generated_answers else 0.0
 
         return {
-            "question": question,
-            "ground_truth": ground_truth,
+            "prompt": prompt,
+            "response": response,
             "generated_answers": generated_answers,
             "true_percentage": true_percentage,
             "correct_count": int(correct_count),
@@ -210,9 +181,6 @@ def generate_multiple_answers(example, num_return_sequences=30):
         print(f"Error processing entry: {e}")
         return None
 
-# ================================
-# Main Execution
-# ================================
 
 def main():
     print(f"Loading dataset from {HINTS_FILE}...")

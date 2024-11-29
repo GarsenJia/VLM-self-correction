@@ -5,15 +5,15 @@ import json
 DATASET_NAME = "JiayiHe/SELFCORSET"
 DATASET_SPLIT = "train"
 HINTS_FILE = "hints.json"
-OUTPUT_FILE = "hints_with_photo.json"
+OUTPUT_FILE = "hints_with_photo_1000.json"
 
 # Step 1: Load the original dataset
 print("Loading dataset...")
 dataset = load_dataset(DATASET_NAME, split=DATASET_SPLIT)
 
-# Step 2: Extract the first 500 "image" fields
-print("Extracting the first 500 images...")
-images = dataset[:500]["image"]  # Assuming the dataset has an "image" field
+# Step 2: Extract the first 1000 "image" fields
+print("Extracting the first 1000 images...")
+images = dataset[:1000]["image"]  # Assuming the dataset has an "image" field
 
 # Step 3: Load hints.json
 print("Loading hints.json...")
