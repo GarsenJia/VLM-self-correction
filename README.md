@@ -82,6 +82,7 @@ Non-Zero Percentages: 756
 Average True Percentage (Non-Zero Only): 16.28
 Max True Percentage: 70.00
 Min True Percentage: 3.33
+
 ===========================================
 results for textonly:
 base:
@@ -97,6 +98,7 @@ Non-Zero Percentages: 584
 Average True Percentage (Non-Zero Only): 10.55
 Max True Percentage: 83.33
 Min True Percentage: 3.33
+
 ==============================================
 results for hints + not finetuned (raw model with hints)
 base:
