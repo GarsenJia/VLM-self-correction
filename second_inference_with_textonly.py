@@ -9,14 +9,13 @@ from io import BytesIO
 from sentence_transformers import SentenceTransformer, util
 import re
 from accelerate import Accelerator
-
-
-# Initialize Accelerator
+# we add the prompt for this file other than that, others are the same
+# init accelerator for multiple GPUs
 accelerator = Accelerator()
 device = accelerator.device
 print(f"Using device: {device}")
 
-# Paths for your local model and processor
+
 MODEL_PATH = "Florence-2-large-CoTVMCQA_model_6_epochs"
 PROCESSOR_PATH = "Florence-2-large-CoTVMCQA_processor_6_epochs"
 
@@ -25,31 +24,28 @@ print("Loading Florence model and processor...")
 model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, trust_remote_code=True)
 processor = AutoProcessor.from_pretrained(PROCESSOR_PATH, trust_remote_code=True)
 
-# Add a special token if needed
 special_token = "<CoTVMCQA>"
 special_tokens_dict = {"additional_special_tokens": [special_token]}
 processor.tokenizer.add_special_tokens(special_tokens_dict)
 model.resize_token_embeddings(len(processor.tokenizer))
 
-# Move Florence model to the appropriate device
 model.to(device)
 
-# Wrap Florence model with Accelerate's prepare (handles multi-GPU)
 model = accelerator.prepare(model)
 
-# Sentence-BERT Model Configuration
+# use this one from hw as the sentence transformer
 EMBEDDING_MODEL_NAME = 'all-MiniLM-L6-v2'
 
 print("Loading Sentence-BERT model...")
 embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
-embedding_model.to(device)  # Move to the same device as Florence model
+embedding_model.to(device)  
 
-# Dataset Configuration
+
 HINTS_FILE = "/scratch/dkhasha1/bzhang90/VLM-self-correction/processed_text_only_data.json"  # Updated dataset
 OUTPUT_FILE = "self_correct_second_round_large_textonly_results.json"
 blank_image = Image.open("/scratch/dkhasha1/bzhang90/VLM-self-correction/512-512.png").convert("RGB")
 
-# Define similarity threshold
+
 SIMILARITY_THRESHOLD = 0.8
 
 
@@ -93,7 +89,7 @@ def generate_ground_truth_variants(correct_answer):
     if len(parts) == 2:
         option_letter = parts[0].strip()
         option_text = parts[1].strip()
-
+        # added for better matching patterns
         variants.add(option_letter)
         variants.add(option_letter.lower())
         variants.add(f"{option_letter}.")
@@ -143,10 +139,9 @@ def generate_multiple_answers(example, num_return_sequences=30):
 
         ground_truth_variants = generate_ground_truth_variants(correct_answer)
 
-        # Prepare inputs for the Florence model using the blank image
         inputs = processor(images=blank_image, text=prompt, return_tensors="pt").to(device)
 
-        # Generate multiple diverse responses
+        # generate multiple diverse responses
         with torch.no_grad():
             outputs = model.generate(
                 **inputs,
@@ -158,15 +153,14 @@ def generate_multiple_answers(example, num_return_sequences=30):
                 num_beams=1
             )
 
-        # Decode generated answers
         generated_answers = [
             processor.tokenizer.decode(output, skip_special_tokens=True).strip()
             for output in outputs
         ]
-
+        # finding the correct numbers 
         correct_flags = is_correct_answer_batch(generated_answers, ground_truth_variants)
         correct_count = np.sum(correct_flags)
-
+        # calculate the percentage of correct
         true_percentage = (correct_count / len(generated_answers)) * 100 if generated_answers else 0.0
 
         return {
@@ -189,7 +183,7 @@ def main():
 
     print(f"Processing {len(dataset)} entries...")
     all_results = []
-
+    # extract the results 
     for example in tqdm(dataset, desc="Generating and Evaluating Answers"):
         result = generate_multiple_answers(example)
         if result:
