@@ -10,20 +10,16 @@ from sentence_transformers import SentenceTransformer, util
 import re
 from accelerate import Accelerator
 
-# ================================
-# Configuration and Setup
-# ================================
+# in this file, we add the hints with inference
 
-# Initialize Accelerator
 accelerator = Accelerator()
 device = accelerator.device
 print(f"Using device: {device}")
 '''
-# Paths for your local model and processor
+
 MODEL_PATH = "Florence-2-CoTVMCQA_model_6_epochs"
 PROCESSOR_PATH = "Florence-2-CoTVMCQA_processor_6_epochs"
 
-# Load the Florence model and processor
 print("Loading Florence model and processor...")
 model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, trust_remote_code=True)
 processor = AutoProcessor.from_pretrained(PROCESSOR_PATH, trust_remote_code=True)
@@ -46,35 +42,28 @@ processor = AutoProcessor.from_pretrained(
     trust_remote_code=True,
     revision=REVISION
 )
-# Add a special token if needed
+
 special_token = "<CoTVMCQA>"
 special_tokens_dict = {"additional_special_tokens": [special_token]}
 processor.tokenizer.add_special_tokens(special_tokens_dict)
 model.resize_token_embeddings(len(processor.tokenizer))
 
-# Move Florence model to the appropriate device
 model.to(device)
 
-# Wrap Florence model with Accelerate's prepare (handles multi-GPU)
 model = accelerator.prepare(model)
 
-# Sentence-BERT Model Configuration
+# using the model from class for cross encoder
 EMBEDDING_MODEL_NAME = 'all-MiniLM-L6-v2'
 
 print("Loading Sentence-BERT model...")
 embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
 embedding_model.to(device)  # Move to the same device as Florence model
 
-# Dataset Configuration
 HINTS_FILE = "hints_with_photo_1000.json"  # Updated dataset
 OUTPUT_FILE = "self_correct_without_finetune_large_only_hinted_results.json"
 
-# Define similarity threshold
 SIMILARITY_THRESHOLD = 0.8
 
-# ================================
-# Helper Functions
-# ================================
 
 def load_image(image_data):
     """
@@ -111,12 +100,12 @@ def generate_ground_truth_variants(correct_answer):
     """
     variants = set()
     variants.add(correct_answer)
-
+        
     parts = correct_answer.split('.', 1)
     if len(parts) == 2:
         option_letter = parts[0].strip()
         option_text = parts[1].strip()
-
+        # added for more accuracte detection of the correct results
         variants.add(option_letter)
         variants.add(option_letter.lower())
         variants.add(f"{option_letter}.")
@@ -158,7 +147,6 @@ def generate_multiple_answers(example, num_return_sequences=30):
             print("Skipping entry due to missing fields.")
             return None
 
-        # Extract the correct answer from ground_truth
         correct_answer = extract_correct_answer(ground_truth)
         if not correct_answer:
             print("Could not extract correct answer from ground_truth.")
@@ -166,13 +154,11 @@ def generate_multiple_answers(example, num_return_sequences=30):
 
         ground_truth_variants = generate_ground_truth_variants(correct_answer)
 
-        # Load the image
         image = load_image(image_data)
         if image is None:
             print("Image loading failed.")
             return None
 
-        # Prepare inputs for the Florence model
         inputs = processor(images=image, text=question, return_tensors="pt").to(device)
 
         # Generate multiple diverse responses
@@ -187,7 +173,6 @@ def generate_multiple_answers(example, num_return_sequences=30):
                 num_beams=1
             )
 
-        # Decode generated answers
         generated_answers = [
             processor.tokenizer.decode(output, skip_special_tokens=True).strip()
             for output in outputs
@@ -210,10 +195,6 @@ def generate_multiple_answers(example, num_return_sequences=30):
         print(f"Error processing entry: {e}")
         return None
 
-# ================================
-# Main Execution
-# ================================
-
 def main():
     print(f"Loading dataset from {HINTS_FILE}...")
     with open(HINTS_FILE, "r") as f:
@@ -221,7 +202,7 @@ def main():
 
     print(f"Processing {len(dataset)} entries...")
     all_results = []
-
+    # generate results
     for example in tqdm(dataset, desc="Generating and Evaluating Answers"):
         result = generate_multiple_answers(example)
         if result:
